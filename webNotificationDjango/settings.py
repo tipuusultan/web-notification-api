@@ -83,7 +83,9 @@ WSGI_APPLICATION = 'webNotificationDjango.wsgi.application'
 # }
 import dj_database_url
 DATABASES = {
-    'default': dj_database_url.config(default="postgresql://web_notification_api_database_user:TV0HGK9gqz4sMrRKV5vOXccc2Gnb62QR@dpg-d2ob7rt6ubrc73el13og-a/web_notification_api_database")
+    'default': dj_database_url.config(
+        default="postgresql://web_notification_api_database_user:TV0HGK9gqz4sMrRKV5vOXccc2Gnb62QR@dpg-d2ob7rt6ubrc73el13og-a.oregon-postgres.render.com/web_notification_api_database"
+    )
 }
 
 
