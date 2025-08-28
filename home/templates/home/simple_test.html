@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Service Worker Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .log { background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Simple Service Worker Test</h1>
+    <button onclick="testSW()">Test Service Worker</button>
+    <button onclick="clearLog()">Clear Log</button>
+    <div id="log" class="log"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] <span class="${type}">${message}</span><br>`;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function testSW() {
+            log('Starting service worker test...', 'info');
+            
+            if (!('serviceWorker' in navigator)) {
+                log('Service Worker not supported', 'error');
+                return;
+            }
+            
+            try {
+                log('Attempting to register service worker...', 'info');
+                const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                log('Service Worker registered successfully!', 'success');
+                log(`Scope: ${registration.scope}`, 'info');
+                log(`Active: ${registration.active ? 'Yes' : 'No'}`, 'info');
+                
+                if (registration.active) {
+                    log('Service Worker is active and ready', 'success');
+                } else {
+                    log('Service Worker is installing/activating...', 'info');
+                    registration.addEventListener('activate', () => {
+                        log('Service Worker activated!', 'success');
+                    });
+                }
+                
+            } catch (error) {
+                log(`Service Worker registration failed: ${error.message}`, 'error');
+                log(`Error details: ${error.stack}`, 'error');
+            }
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            log('Page loaded, ready to test', 'info');
+        });
+    </script>
+</body>
+</html>

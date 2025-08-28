@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Notification System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .notification-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .token-display {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            text-align: left;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🔔</div>
+        <h1>Web Notification System</h1>
+        <p class="subtitle">Enable push notifications to stay updated</p>
+        
+        <div class="notification-card">
+            <h3>Step 1: Enable Notifications</h3>
+            <p>Click the button below to allow notifications from this website</p>
+            <button class="btn" id="enableNotifications">🔔 Enable Notifications</button>
+            <div id="notificationStatus" class="status hidden"></div>
+        </div>
+        
+        <div class="notification-card" id="tokenSection" style="display: none;">
+            <h3>Step 2: FCM Token</h3>
+            <p>Your FCM token has been generated and saved:</p>
+            <div class="token-display" id="tokenDisplay"></div>
+            <button class="btn btn-secondary" id="copyToken">📋 Copy Token</button>
+        </div>
+        
+        <div class="notification-card" id="testSection" style="display: none;">
+            <h3>Step 3: Test Notifications</h3>
+            <p>Send a test notification to verify everything is working</p>
+            <button class="btn" id="sendTestNotification">🚀 Send Test Notification</button>
+            <div id="testStatus" class="status hidden"></div>
+        </div>
+        
+        <div class="stats" id="statsSection" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-number" id="totalTokens">0</div>
+                <div class="stat-label">Active Tokens</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalNotifications">0</div>
+                <div class="stat-label">Total Notifications</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="pendingNotifications">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="sentNotifications">0</div>
+                <div class="stat-label">Sent</div>
+            </div>
+        </div>
+        
+        <div class="notification-card" id="timezoneSection">
+            <h3>🌍 Timezone Information</h3>
+            <p>Current server time and timezone settings:</p>
+            <div class="token-display" id="timezoneDisplay">
+                Loading timezone info...
+            </div>
+            <p><small>Note: All notifications are scheduled in your local timezone (IST)</small></p>
+        </div>
+    </div>
+
+    <script>
+        let fcmToken = null;
+        
+        // Check if notifications are supported
+        if (!('Notification' in window)) {
+            showStatus('Notifications are not supported in this browser', 'error');
+            document.getElementById('enableNotifications').disabled = true;
+        }
+        
+        // Check if service worker is supported
+        if (!('serviceWorker' in navigator)) {
+            showStatus('Service Worker is not supported in this browser', 'error');
+        }
+        
+        // Enable notifications button
+        document.getElementById('enableNotifications').addEventListener('click', async () => {
+            try {
+                const permission = await Notification.requestPermission();
+                
+                if (permission === 'granted') {
+                    showStatus('✅ Notifications enabled! Now generating FCM token...', 'success');
+                    await initializeFCM();
+                } else if (permission === 'denied') {
+                    showStatus('❌ Notifications were denied. Please enable them in your browser settings.', 'error');
+                } else {
+                    showStatus('⚠️ Notification permission was dismissed.', 'info');
+                }
+            } catch (error) {
+                showStatus('❌ Error enabling notifications: ' + error.message, 'error');
+            }
+        });
+        
+        // Initialize FCM
+        async function initializeFCM() {
+            try {
+                console.log('Starting FCM initialization...');
+                
+                // Register service worker
+                console.log('Registering service worker...');
+                const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                console.log('Service Worker registered:', registration);
+                
+                // Wait a bit for service worker to be ready
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Get FCM token
+                console.log('Getting FCM token...');
+                const messaging = firebase.messaging();
+                fcmToken = await messaging.getToken({
+                    vapidKey: 'BBj2Oj74z-Yl4MUQYJSoltNFCV2fmBrodGqkVUVLs7bihSP0XitjLOqwEFDCysP2X9mOdbZRkBP79l21qbXsdVg' // Get this from Firebase Console > Project Settings > Cloud Messaging > Web configuration
+                });
+                
+                console.log('FCM token received:', fcmToken ? 'Yes' : 'No');
+                
+                if (fcmToken) {
+                    // Save token to server
+                    await saveFCMToken(fcmToken);
+                    showTokenSection();
+                    loadStats();
+                } else {
+                    showStatus('❌ Failed to get FCM token', 'error');
+                }
+            } catch (error) {
+                console.error('Error initializing FCM:', error);
+                showStatus('❌ Error initializing FCM: ' + error.message, 'error');
+            }
+        }
+        
+        // Save FCM token to server
+        async function saveFCMToken(token) {
+            try {
+                const response = await fetch('/api/save-fcm-token/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token: token })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus('✅ FCM token saved successfully!', 'success');
+                } else {
+                    showStatus('❌ Failed to save FCM token: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Error saving FCM token: ' + error.message, 'error');
+            }
+        }
+        
+        // Show token section
+        function showTokenSection() {
+            document.getElementById('tokenSection').style.display = 'block';
+            document.getElementById('tokenDisplay').textContent = fcmToken;
+            document.getElementById('testSection').style.display = 'block';
+        }
+        
+        // Copy token button
+        document.getElementById('copyToken').addEventListener('click', () => {
+            navigator.clipboard.writeText(fcmToken).then(() => {
+                showStatus('✅ Token copied to clipboard!', 'success');
+            }).catch(() => {
+                showStatus('❌ Failed to copy token', 'error');
+            });
+        });
+        
+        // Send test notification
+        document.getElementById('sendTestNotification').addEventListener('click', async () => {
+            try {
+                const scheduledTime = new Date(Date.now() + 10000); // 10 seconds from now
+                
+                const response = await fetch('/api/schedule-notification/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: '🧪 Test Notification',
+                        body: 'This is a test notification from your web app!',
+                        fcm_token: fcmToken,
+                        scheduled_at: scheduledTime.toISOString(),
+                        priority: 'high'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showTestStatus('✅ Test notification scheduled! It will be sent in 10 seconds.', 'success');
+                    // Check for notifications after 12 seconds
+                    setTimeout(checkAndSendNotifications, 12000);
+                } else {
+                    showTestStatus('❌ Failed to schedule test notification: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showTestStatus('❌ Error sending test notification: ' + error.message, 'error');
+            }
+        });
+        
+        // Check and send notifications
+        async function checkAndSendNotifications() {
+            try {
+                const response = await fetch('/api/check-and-send-notifications/');
+                const result = await response.json();
+                
+                if (result.success) {
+                    showTestStatus(`✅ ${result.message}`, 'success');
+                    loadStats();
+                } else {
+                    showTestStatus('❌ Error checking notifications: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showTestStatus('❌ Error checking notifications: ' + error.message, 'error');
+            }
+        }
+        
+        // Load statistics
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/notification-status/');
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('totalTokens').textContent = result.data.total_tokens;
+                    document.getElementById('totalNotifications').textContent = result.data.total_scheduled;
+                    document.getElementById('pendingNotifications').textContent = result.data.pending;
+                    document.getElementById('sentNotifications').textContent = result.data.sent;
+                    document.getElementById('statsSection').style.display = 'grid';
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        // Show status messages
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('notificationStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+        
+        function showTestStatus(message, type) {
+            const statusDiv = document.getElementById('testStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+        
+        // Load stats on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadTimezoneInfo();
+        });
+
+        async function loadTimezoneInfo() {
+            try {
+                const response = await fetch('/api/timezone-info/');
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('timezoneDisplay').textContent = `Server Time: ${result.data.server_time}\nTimezone: ${result.data.timezone}`;
+                    document.getElementById('timezoneSection').style.display = 'block';
+                } else {
+                    document.getElementById('timezoneDisplay').textContent = 'Failed to load timezone info.';
+                    document.getElementById('timezoneSection').style.display = 'block'; // Ensure it's visible even on error
+                }
+            } catch (error) {
+                document.getElementById('timezoneDisplay').textContent = 'Error loading timezone info: ' + error.message;
+                document.getElementById('timezoneSection').style.display = 'block'; // Ensure it's visible even on error
+            }
+        }
+    </script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfk27q_0ybzJWPivChOGATa_w-aDZjIEg",
+            authDomain: "notifications-ed7a5.firebaseapp.com",
+            projectId: "notifications-ed7a5",
+            storageBucket: "notifications-ed7a5.firebasestorage.app",
+            messagingSenderId: "63241154363",
+            appId: "1:63241154363:web:d6906abe4a5bee83ff911e",
+            measurementId: "G-L7NH85PVF6"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+</body>
+</html>

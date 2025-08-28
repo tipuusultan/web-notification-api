@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Configuration Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .log { background: #f0f0f0; padding: 15px; margin: 15px 0; font-family: monospace; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .warning { color: orange; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .config { background: #e9ecef; padding: 10px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase Configuration Test</h1>
+    <p>This page tests your Firebase configuration step by step.</p>
+    
+    <button onclick="testFirebaseConfig()">Test Firebase Config</button>
+    <button onclick="testFirebaseConnection()">Test Firebase Connection</button>
+    <button onclick="testServiceWorker()">Test Service Worker</button>
+    <button onclick="testFCMToken()">Test FCM Token</button>
+    <button onclick="clearLog()">Clear Log</button>
+    
+    <div id="log" class="log"></div>
+    
+    <h3>Current Firebase Configuration</h3>
+    <div class="config">
+        <strong>Project ID:</strong> notifications-ed7a5<br>
+        <strong>App ID:</strong> 1:63241154363:web:d6906abe4a5bee83ff911e<br>
+        <strong>VAPID Key:</strong> BBj2Oj74z-Yl4MUQYJSoltNFCV2fmBrodGqkVUVLs7bihSP0XitjLOqwEFDCysP2X9mOdbZRkBP79l21qbXsdVg
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
+    
+    <script>
+        let logElement = document.getElementById('log');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] <span class="${type}">${message}</span>`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function clearLog() {
+            logElement.innerHTML = '';
+        }
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfk27q_0ybzJWPivChOGATa_w-aDZjIEg",
+            authDomain: "notifications-ed7a5.firebaseapp.com",
+            projectId: "notifications-ed7a5",
+            storageBucket: "notifications-ed7a5.firebasestorage.app",
+            messagingSenderId: "63241154363",
+            appId: "1:63241154363:web:d6906abe4a5bee83ff911e",
+            measurementId: "G-L7NH85PVF6"
+        };
+        
+        async function testFirebaseConfig() {
+            log('Testing Firebase configuration...', 'info');
+            
+            try {
+                // Initialize Firebase
+                firebase.initializeApp(firebaseConfig);
+                log('✅ Firebase initialized successfully', 'success');
+                
+                // Check Firebase options
+                const options = firebase.app().options;
+                log(`Project ID: ${options.projectId}`, 'info');
+                log(`Auth Domain: ${options.authDomain}`, 'info');
+                log(`Storage Bucket: ${options.storageBucket}`, 'info');
+                
+            } catch (error) {
+                log(`❌ Firebase initialization failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFirebaseConnection() {
+            log('Testing Firebase connection...', 'info');
+            
+            try {
+                if (!firebase.apps.length) {
+                    log('❌ Firebase not initialized. Run "Test Firebase Config" first.', 'error');
+                    return;
+                }
+                
+                const app = firebase.app();
+                log(`✅ Firebase app: ${app.name}`, 'success');
+                log(`✅ Firebase options loaded: ${Object.keys(app.options).length} options`, 'success');
+                
+            } catch (error) {
+                log(`❌ Firebase connection test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testServiceWorker() {
+            log('Testing Service Worker...', 'info');
+            
+            if (!('serviceWorker' in navigator)) {
+                log('❌ Service Worker not supported in this browser', 'error');
+                return;
+            }
+            
+            try {
+                const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                log('✅ Service Worker registered successfully', 'success');
+                log(`Scope: ${registration.scope}`, 'info');
+                log(`Active: ${registration.active ? 'Yes' : 'No'}`, 'info');
+                
+                if (registration.active) {
+                    log('✅ Service Worker is active and ready', 'success');
+                } else {
+                    log('⏳ Service Worker is installing/activating...', 'warning');
+                    registration.addEventListener('activate', () => {
+                        log('✅ Service Worker activated!', 'success');
+                    });
+                }
+                
+            } catch (error) {
+                log(`❌ Service Worker registration failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFCMToken() {
+            log('Testing FCM Token generation...', 'info');
+            
+            try {
+                if (!firebase.apps.length) {
+                    log('❌ Firebase not initialized. Run "Test Firebase Config" first.', 'error');
+                    return;
+                }
+                
+                // Check if service worker is ready
+                if (!('serviceWorker' in navigator)) {
+                    log('❌ Service Worker not supported', 'error');
+                    return;
+                }
+                
+                // Wait for service worker to be ready
+                const registration = await navigator.serviceWorker.ready;
+                log('✅ Service Worker is ready', 'success');
+                
+                // Get messaging instance
+                const messaging = firebase.messaging();
+                log('✅ Firebase Messaging initialized', 'success');
+                
+                // Request notification permission
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    log('✅ Notification permission granted', 'success');
+                } else {
+                    log(`⚠️ Notification permission: ${permission}`, 'warning');
+                }
+                
+                // Try to get FCM token
+                log('Attempting to get FCM token...', 'info');
+                const token = await messaging.getToken({
+                    vapidKey: 'BBj2Oj74z-Yl4MUQYJSoltNFCV2fmBrodGqkVUVLs7bihSP0XitjLOqwEFDCysP2X9mOdbZRkBP79l21qbXsdVg'
+                });
+                
+                if (token) {
+                    log('✅ FCM Token generated successfully!', 'success');
+                    log(`Token: ${token.substring(0, 50)}...`, 'info');
+                } else {
+                    log('❌ FCM Token generation failed - no token returned', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ FCM Token test failed: ${error.message}`, 'error');
+                log(`Error code: ${error.code}`, 'error');
+                log(`Error details: ${error.stack}`, 'error');
+            }
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            log('Page loaded, ready to test Firebase configuration', 'info');
+        });
+    </script>
+</body>
+</html>
