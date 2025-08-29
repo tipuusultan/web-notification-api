@@ -24,7 +24,7 @@ print("🚀 Starting Fixed Automatic Notifications...")
 print("📱 This will check for notifications every 60 seconds")
 print("🛡️  Duplicate protection enabled - each notification sent only once")
 print("⏹️  Press Ctrl+C to stop")
-print("-" * 60)
+print("-" * 10)
 
 try:
     count = 0
@@ -49,10 +49,10 @@ try:
         else:
             print("😴 No notifications due at this time")
         
-        print("⏳ Waiting 60 seconds...")
+        print("⏳ Waiting 10 seconds...")
         
         # Wait 60 seconds
-        time.sleep(60)
+        time.sleep(10)
         
 except KeyboardInterrupt:
     print("\n\n🛑 Stopped by user")

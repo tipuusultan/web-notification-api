@@ -27,15 +27,24 @@ class FCMNotificationService:
                 print(f"Service account file not found: {self.service_account_file}")
                 return
             
+            # Debug: show which credentials file is being used
+            try:
+                with open(self.service_account_file, 'r') as f:
+                    svc = json.load(f)
+                print(
+                    f"🔎 Using service account: email={svc.get('client_email')} key_id={svc.get('private_key_id')}"
+                )
+            except Exception as read_err:
+                print(f"⚠️ Could not read service account file for debug: {read_err}")
+
             # Check if Firebase is already initialized
             if not firebase_admin._apps:
                 cred = credentials.Certificate(self.service_account_file)
-                firebase_admin.initialize_app(cred, {
-                    'projectId': self.project_id
-                })
+                # Let SDK infer project ID from service account to avoid mismatches
+                firebase_admin.initialize_app(cred)
                 print("✅ Firebase Admin SDK initialized successfully")
             else:
-                print("✅ Firebase Admin SDK already initialized")
+                print("✅ Firebase Admin SDK already initialized (existing app retained)")
                 
         except Exception as e:
             print(f"❌ Error initializing Firebase: {str(e)}")
