@@ -8,7 +8,7 @@ from datetime import datetime
 from django.conf import settings
 import os
 import firebase_admin
-from firebase_admin import credentials, messaging
+from firebase_admin import credentials, messaging, exceptions
 from django.utils import timezone
 
 class FCMNotificationService:
@@ -83,7 +83,7 @@ class FCMNotificationService:
                 'success': False,
                 'error': 'FCM token is not registered or invalid'
             }
-        except messaging.InvalidArgumentError as e:
+        except exceptions.InvalidArgumentError as e:
             return {
                 'success': False,
                 'error': f'Invalid argument: {str(e)}'
