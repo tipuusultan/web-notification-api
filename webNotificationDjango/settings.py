@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'home',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -49,7 +50,42 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
+
+
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    # Add your frontend domain here
+]
+
+# Or for development, you can use:
+CORS_ALLOW_ALL_ORIGINS = True  # Only for development!
+
+# Allow credentials if needed
+CORS_ALLOW_CREDENTIALS = True
+
+# Allowed headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+
+
 
 ROOT_URLCONF = 'webNotificationDjango.urls'
 
@@ -75,18 +111,18 @@ WSGI_APPLICATION = 'webNotificationDjango.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-import dj_database_url
 DATABASES = {
-    'default': dj_database_url.config(
-        default="postgresql://web_notification_api_database_user:TV0HGK9gqz4sMrRKV5vOXccc2Gnb62QR@dpg-d2ob7rt6ubrc73el13og-a.oregon-postgres.render.com/web_notification_api_database"
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
+# import dj_database_url
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default="postgresql://web_notification_api_database_user:TV0HGK9gqz4sMrRKV5vOXccc2Gnb62QR@dpg-d2ob7rt6ubrc73el13og-a.oregon-postgres.render.com/web_notification_api_database"
+#     )
+# }
 
 
 # Password validation
@@ -133,3 +169,7 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+
